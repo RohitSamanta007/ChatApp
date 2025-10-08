@@ -1,0 +1,15 @@
+import express from "express"
+
+const router = express.Router();
+
+router.get("/signup", (req, res) => {
+    
+})
+router.get("/login", (req, res) => {
+    return res.send("Login details received")
+})
+router.get("/logout", (req, res) => {
+
+})
+
+export default router;
