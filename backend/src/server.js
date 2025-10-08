@@ -6,10 +6,14 @@ import path from "path";
 
 import authRoute from "./routes/auth.route.js";
 import messageRoute from "./routes/message.route.js";
+import { connectDB } from "./lib/db.js";
 
 const port = process.env.PORT || 8000;
 const app = express();
 const __dirname = path.resolve();
+
+// middlewares
+app.use(express.json());
 
 app.use("/api/auth", authRoute);
 app.use("/api/messages", messageRoute);
@@ -23,4 +27,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(port, () => console.log("Server is running on port no : ", port));
+app.listen(port, () => {
+  console.log("Server is running on port no : ", port);
+  connectDB();
+});
