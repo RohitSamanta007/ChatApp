@@ -1,0 +1,1 @@
+-> express js version 5 changes : instead of using "*" for all exceptional route use "/*splat"
