@@ -47,10 +47,10 @@ export const signUp = async (req, res) => {
     })
     
     if(newUser){
-        const token =  generateToken(newUser._id, res);
-        await newUser.save();
+        const savedUser = await newUser.save();
+        const token =  generateToken(savedUser._id, res);
 
-        return res.status(200).json({
+        return res.status(201).json({
             success: true,
             _id: newUser._id,
             fullName: newUser.fullName,
