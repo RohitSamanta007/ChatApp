@@ -1,6 +1,7 @@
+import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 import { generateToken } from "../lib/utils.js";
 import userModel from "../models/userModel.js";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 
 export const signUp = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -13,12 +14,10 @@ export const signUp = async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .json({
-          message: "Password must be atleast 6 characters long.",
-          success: false,
-        });
+      return res.status(400).json({
+        message: "Password must be atleast 6 characters long.",
+        success: false,
+      });
     }
 
     // check for valid email
@@ -30,40 +29,51 @@ export const signUp = async (req, res) => {
     }
 
     // check for existing user
-    const user = await userModel.findOne({email})
+    const user = await userModel.findOne({ email });
 
-    if(user){
-        return res.status(400).json({success: false, message: "User already exists with this email"})
+    if (user) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "User already exists with this email",
+        });
     }
-    
+
     // insert a new user to database
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    
+
     const newUser = new userModel({
-        fullName,
-        email,
-        password: hashedPassword,
-    })
-    
-    if(newUser){
-        const savedUser = await newUser.save();
-        const token =  generateToken(savedUser._id, res);
+      fullName,
+      email,
+      password: hashedPassword,
+    });
 
-        return res.status(201).json({
-            success: true,
-            _id: newUser._id,
-            fullName: newUser.fullName,
-            email: newUser.email,
-            profilePic: newUser.profilePic,
-        })
-    }
-    else{
-        return res.status(400).json({success: false, message: "Invalid user data"})
-    }
+    if (newUser) {
+      const savedUser = await newUser.save();
+      const token = generateToken(savedUser._id, res);
 
+      await sendWelcomeEmail(
+        savedUser.email,
+        savedUser.fullName,
+        process.env.CLIENT_URL
+      );
+
+      return res.status(201).json({
+        success: true,
+        _id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+      });
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user data" });
+    }
   } catch (error) {
     console.log("Error in SignUp Controller : ", error);
-    return res.status(500).json({message: "Internal Server Error"})
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
