@@ -3,6 +3,7 @@ console.log("Hello from server");
 import express from "express";
 import "dotenv/config";
 import path from "path";
+import cookieParser from "cookie-parser"
 
 import authRoute from "./routes/auth.route.js";
 import messageRoute from "./routes/message.route.js";
@@ -14,7 +15,9 @@ const __dirname = path.resolve();
 
 // middlewares
 app.use(express.json());
+app.use(cookieParser());
 
+// routes
 app.use("/api/auth", authRoute);
 app.use("/api/messages", messageRoute);
 
