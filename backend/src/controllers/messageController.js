@@ -53,6 +53,23 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id;
     const { id: receiverId } = req.params;
 
+    if (!text && !image) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Text of image is required" });
+    }
+    if (senderId.equals(receiverId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Can not send message to yourself" });
+    }
+    const receiverExists = await userModel.exists({ _id: receiverId });
+    if (!receiverExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Receiver not found" });
+    }
+
     let imageUrl;
     if (image) {
       const uploadResponse = await cloudinary.uploader.upload(image);
@@ -106,9 +123,9 @@ export const getChatFriends = async (req, res) => {
       .select("-password");
 
     return res.status(200).json({
-        success: true,
-        chatFriends
-    })
+      success: true,
+      chatFriends,
+    });
   } catch (error) {
     console.log("Error in getChatFriend : ", error);
     return res.status(500).json({
