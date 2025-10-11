@@ -134,6 +134,7 @@ export const logout = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
+  console.log("Hello from update profile")
   try {
     const { profilePic } = req.body;
     if (!profilePic) {

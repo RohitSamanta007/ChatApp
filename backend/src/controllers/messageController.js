@@ -1,4 +1,5 @@
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 import messageModel from "../models/mesageModel.js";
 import userModel from "../models/userModel.js";
 
@@ -9,10 +10,8 @@ export const getAllContacts = async (req, res) => {
       .find({ _id: { $ne: loggedInUserId } })
       .select("-password");
 
-    return res.status(200).json({
-      success: true,
-      filteredUsers,
-    });
+    return res.status(200).json(
+      filteredUsers);
   } catch (error) {
     console.log("Error in getAllContacts in message routes : ", error);
     return res.status(500).json({
@@ -34,10 +33,7 @@ export const getMessagesByUserId = async (req, res) => {
       ],
     });
 
-    return res.status(200).json({
-      success: true,
-      messages,
-    });
+    return res.status(200).json(messages);
   } catch (error) {
     console.log("Error in getMessageById : ", error);
     return res.status(500).json({
@@ -85,11 +81,12 @@ export const sendMessage = async (req, res) => {
     await newMessage.save();
 
     // TODO: send message in real time if the user is online
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if(receiverSocketId){
+      io.to(receiverSocketId).emit("newMessage", newMessage)
+    }
 
-    return res.status(200).json({
-      success: true,
-      newMessage,
-    });
+    return res.status(200).json(newMessage);
   } catch (error) {
     console.log("Error in sendMessage : ", error);
     return res.status(500).json({
@@ -122,10 +119,7 @@ export const getChatFriends = async (req, res) => {
       .find({ _id: { $in: chatFriendsId } })
       .select("-password");
 
-    return res.status(200).json({
-      success: true,
-      chatFriends,
-    });
+    return res.status(200).json(chatFriends);
   } catch (error) {
     console.log("Error in getChatFriend : ", error);
     return res.status(500).json({
